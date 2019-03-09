@@ -2,7 +2,14 @@
 Module.register('MMM-navbar', {
 
 	defaults: {
-		pages: 3,
+		pages: [
+			{ icon: "fas fa-home", name: "main" },
+			{ icon: "fas fa-calendar", name: "calendar" },
+			{ icon: "fas fa-music", name: "media" },
+			{ icon: "fas fa-tools", name: "tools" },
+		],
+		defaultPage: 1,
+		defaultInterval: 10*60*1000,
 	},
 
 	getScripts: function () {
@@ -10,18 +17,18 @@ Module.register('MMM-navbar', {
 	},
 
 	getStyles: function () {
-		return ["MMM-navbar.css", "font-awesome.css"];
+		return ["MMM-navbar.css", "font-awesome5.css"];
 	},
 
 	start() {
-		this.curPage = 1;
+		this.curPage = this.config.defaultPage;
 	},
 
 	checkInterval: function() {
 		
 		var self = this;
 
-		if (self.curPage === 1) {
+		if (self.curPage === self.config.defaultPage) {
 			if (self.changeInterval != null)
 			{
 				console.log("Clearing page change interval");
@@ -33,10 +40,10 @@ Module.register('MMM-navbar', {
 		{
 			console.log("Starting page change interval");
 			self.changeInterval = setInterval(() => {
-				self.curPage = 1;
-				self.sendNotification('SELECT_PAGE', 1);
+				self.curPage = self.config.defaultPage;
+				self.sendNotification('SELECT_PAGE', self.config.defaultPage);
 				self.updateDom();
-			}, 10*60*1000);
+			}, self.config.defaultInterval);
 		}
 	},
 	
@@ -53,7 +60,8 @@ Module.register('MMM-navbar', {
 			this.curPage = payload;
 			this.updateDom();
 			this.checkInterval();
-		} else if (notification === 'MAX_PAGES_CHANGED') {
+		}
+/*		else if (notification === 'MAX_PAGES_CHANGED') {
 			Log.log(`${this.name} received a notification to change the maximum number of pages to ${payload}`);
 			this.config.pages = payload;
 			if (payload - 1 < this.curPage) {
@@ -61,14 +69,15 @@ Module.register('MMM-navbar', {
 				this.checkInterval();
 			}
 			this.updateDom();
-		} else if (notification === 'PAGE_INCREMENT') {
+		}
+*/		else if (notification === 'PAGE_INCREMENT') {
 			Log.log(`${this.name} recieved a notification to increment pages!`);
-			this.curPage = mod(this.curPage + 1, this.config.pages);
+			this.curPage = mod(this.curPage + 1, this.config.pages.length);
 			this.updateDom();
 			this.checkInterval();
 		} else if (notification === 'PAGE_DECREMENT') {
 			Log.log(`${this.name} recieved a notification to decrement pages!`);
-			this.curPage = mod(this.curPage - 1, this.config.pages);
+			this.curPage = mod(this.curPage - 1, this.config.pages.length);
 			this.updateDom();
 			this.checkInterval();
 		}
@@ -91,41 +100,24 @@ Module.register('MMM-navbar', {
 		var wrapper = document.createElement("div");
 		wrapper.className = "MMM-navbar";
 
-		var homebutton = document.createElement("span");
-		var calendarbutton = document.createElement("span");
-		var mediabutton = document.createElement("span");
+		self.config.pages.forEach(function(page) {
+			var pageNode =  document.createElement("span");
+			pageNode.className = page.icon + ' MMM-navbar';
+			if (self.curPage == self.config.pages.indexOf(page)) {
+				pageNode.className += ' bright';
+			}
+			pageNode.onclick = makeOnClickHandler(self.config.pages.indexOf(page));
+			
+			wrapper.appendChild(pageNode);
+		}, self);
+		
 		var screensaver = document.createElement("span");
-
-		homebutton.className = "fa fa-home MMM-navbar";
-		if (this.curPage === 0) {
-			homebutton.className += " bright";
-		}
-
-		calendarbutton.className = "fa fa-calendar MMM-navbar";
-		if (this.curPage === 1) {
-			calendarbutton.className += " bright";
-		}
-
-		mediabutton.className = "fa fa-music MMM-navbar";
-		if (this.curPage === 2) {
-			mediabutton.className += " bright";
-		}
-
 		screensaver.className = "fa fa-desktop MMM-navbar";
-		
-		wrapper.appendChild(homebutton);
-		wrapper.appendChild(calendarbutton);
-		wrapper.appendChild(mediabutton);
-		wrapper.appendChild(screensaver);
-
-		homebutton.onclick = makeOnClickHandler(0);
-		calendarbutton.onclick = makeOnClickHandler(1);
-		mediabutton.onclick = makeOnClickHandler(2);
-		
 		screensaver.onclick = () => {
 			this.sendSocketNotification('START_SCREENSAVER', null);
 		};
-	
+		
+		wrapper.appendChild(screensaver);
 
 		Log.info("NavBar created");
 
