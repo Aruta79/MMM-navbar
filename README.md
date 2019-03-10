@@ -26,7 +26,8 @@ Add this to your config.js:
 			}
 		},
 
-```
+````
+
 Configuration:
  - **pages** lists pages to switch to. They should be in the same order as defined in MMM-Page-Selector, as the notification "_SELECT_PAGE_" will be sent by page number
  - **icon** defines Font Awesome icon identifier
