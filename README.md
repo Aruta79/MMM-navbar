@@ -27,9 +27,10 @@ Add this to your config.js:
 		},
 
 ````
+In the **MMM-Page-Selector** page configuration, the **MMM-navbar** module should be included in _exclusions_, to make it visible on every page.
 
 Configuration:
- - **pages** lists pages to switch to. They should be in the same order as defined in MMM-Page-Selector, as the notification "_SELECT_PAGE_" will be sent by page number
+ - **pages** lists pages to switch to. They should be in the same order as defined in **MMM-Page-Selector**, as the notification "_SELECT_PAGE_" will be sent by page number
  - **icon** defines Font Awesome icon identifier
  
  The navigation bar also includes an additional icon to immediately trigger the screensaver using _xscreensaver_
